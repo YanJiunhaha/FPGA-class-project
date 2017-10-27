@@ -4,17 +4,22 @@ module test (
 	//input [7:0]Data,
 	output reg [5:0]Ring_Counter,
 	output [11:0]Control,
-	output reg[7:0]Data_Output
+	output reg[7:0]Data_Output,
+	output reg[7:0]ACC,
+	output reg[7:0]ADD,
+	output reg[7:0]temp,
+	output reg[7:0]bus,
+	output reg [3:0]PC_counter
 );
 	reg [3:0]decoder;
-	reg [3:0]PC_counter;
-	reg [7:0]bus;
+	//reg [3:0]PC_counter;
+	//reg [7:0]bus;
 	reg [3:0]MAR;
 	reg [7:4]i;
 	reg [3:0]i2;
-	reg [7:0]ACC;
-	reg [7:0]ADD;
-	reg [7:0]temp;
+	//reg [7:0]ACC;
+	//reg [7:0]ADD;
+	//reg [7:0]temp;
 //---------------------control------------------------------
 	always@(i)begin
 		case(i)
@@ -32,11 +37,11 @@ module test (
 	end
 	assign Control[11]=Ring_Counter[1];
 	assign Control[10]=Ring_Counter[0];
-	assign Control[9]=!(Ring_Counter[0]||Ring_Counter[3]&&(decoder[3]||decoder[2]||decoder[1]||decoder[0]));
-	assign Control[8]=!(Ring_Counter[2]||Ring_Counter[4]&&(decoder[3]||decoder[2]||decoder[1]||decoder[0]));
+	assign Control[9]=!(Ring_Counter[0]||Ring_Counter[3]&&(decoder[3]||decoder[2]||decoder[1]));
+	assign Control[8]=!(Ring_Counter[2]||Ring_Counter[4]&&(decoder[3]||decoder[2]||decoder[1]));
 	assign Control[7]=!Ring_Counter[2];
-	assign Control[6]=!(Ring_Counter[3]&&(decoder[3]||decoder[2]||decoder[1]||decoder[0]));
-	assign Control[5]=!(Ring_Counter[4]&&decoder[3]);
+	assign Control[6]=!(Ring_Counter[3]&&(decoder[3]||decoder[2]||decoder[1]));
+	assign Control[5]=!(Ring_Counter[4]&&decoder[3]||Ring_Counter[5]&&(decoder[2]||decoder[1]));
 	assign Control[4]=Ring_Counter[3]&&decoder[0];
 	assign Control[3]=Ring_Counter[5]&&decoder[1];
 	assign Control[2]=Ring_Counter[5]&&(decoder[2]||decoder[1]);
@@ -77,11 +82,12 @@ module test (
 //----------------------multiple------------------------
 	always@(Control)begin
 		casex(Control)
-			12'bx0xxxxxxxxxx:bus[3:0]<=PC_counter;
-			12'bxx0xxxxxxxxx:bus<=Instruction_decoder(MAR);
+		     //ba9876543210
+			12'bx1xxxxxxxxxx:bus[3:0]<=PC_counter;
+			12'bxxx0xxxxxxxx:bus<=Instruction_decoder(MAR);
 			12'bxxxxx0xxxxxx:bus[3:0]<=i2;
-			12'bxxxxxxx0xxxx:bus<=ACC;
-			12'bxxxxxxxxx0xx:bus<=ADD;
+			12'bxxxxxxx1xxxx:bus<=ACC;
+			12'bxxxxxxxxx1xx:bus<=ADD;
 		endcase
 	end
 //----------------------Memory Address Register--------
@@ -125,4 +131,5 @@ module test (
 			Data_Output<=bus;
 		end
 	end
+	
 endmodule 
