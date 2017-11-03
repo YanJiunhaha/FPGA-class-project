@@ -53,6 +53,7 @@ module test (
 		else begin
 			if(Control[11])begin
 				PC_counter<=PC_counter+1;
+				if(PC_counter==3)PC_counter<=0;
 			end 
 		end
 	end
@@ -80,16 +81,17 @@ module test (
 		endcase
 	endfunction
 //----------------------multiple------------------------
-	always@(Control)begin
+	always@(*)begin
 		casex(Control)
 		     //ba9876543210
 			12'bx1xxxxxxxxxx:bus[3:0]<=PC_counter;
 			12'bxxx0xxxxxxxx:bus<=Instruction_decoder(MAR);
-			12'bxxxxx0xxxxxx:bus[3:0]<=i2;
 			12'bxxxxxxx1xxxx:bus<=ACC;
 			12'bxxxxxxxxx1xx:bus<=ADD;
+			12'bxxxxx0xxxxxx:bus[3:0]<=i2;
 		endcase
 	end
+
 //----------------------Memory Address Register--------
 	always@(posedge clk)begin
 		if(!Control[9])begin
@@ -107,13 +109,16 @@ module test (
 		end
 	end
 //----------------------Accumulator-----------------------
-	always@(posedge clk)begin
-		if(!Control[5])begin
-			ACC<=bus;
+	always@(posedge clk,negedge clr)begin
+		if(!clr)ACC<=0;
+		else begin
+			if(!Control[5])begin
+				ACC<=bus;
+			end
 		end
 	end
 //----------------------Adder--------------------
-	always@(posedge clk)begin
+	always@(ACC,temp,Control[3],Control[1])begin
 	
 		if(Control[3])begin
 			ADD<=ACC-temp;
@@ -125,9 +130,8 @@ module test (
 		end
 	end
 //---------------------Output---------------------
-	always@(posedge clk,negedge clr)begin
-		if(!clr)Data_Output<=0;
-		else if(!Control[0])begin
+	always@(posedge clk)begin
+		if(!Control[0])begin
 			Data_Output<=bus;
 		end
 	end
