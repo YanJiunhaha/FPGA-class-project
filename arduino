@@ -1,0 +1,67 @@
+/*
+    專案名稱：ultrasonic_ex1.ino
+    程式功能：：超音波測距
+
+    說明：
+    採用NewPing函數庫：
+    http://playground.arduino.cc/Code/NewPing    
+    本函數庫好處就是把一些計算距離的細節隱藏，
+    包成函數呼叫的方式讓使用者方便呼叫。
+
+    如果使用者想了解超音波如何發送pulse與計算返回距離，
+    也可參考一般市售arduino書籍或網路資源。
+
+*/
+
+// 引用NewPing函數庫
+#include <NewPing.h>
+
+// pin腳定義
+/* 請由IO9的地方接杜邦線至P8/P9最下方，也就是IO12
+   原TRIGGER_PIN接至IO9已經割掉，不再與ESP-12F模組相連。
+*/
+//#define TRIGGER_PIN  12 // 硬體版本：V1.0
+#define TRIGGER_PIN  5 // 硬體版本：V1.1
+#define ECHO_PIN     10 // 硬體版本：V1.0、V1.1
+#define D4 4
+#define D0 0
+#define D2 2
+#define D16 16
+#define D14 14
+#define D12 12
+#define D13 13
+
+// 定義偵測最大距離
+#define MAX_DISTANCE 127
+
+// 建立實體
+NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE);
+
+void setup() {
+    // 串列埠初始及列印資訊
+    Serial.begin(9600);
+    Serial.println("Untra Sonic test!");     
+    pinMode(D4,OUTPUT);
+    pinMode(D0,OUTPUT);
+    pinMode(D2,OUTPUT);
+    pinMode(D16,OUTPUT);
+    pinMode(D14,OUTPUT);
+    pinMode(D12,OUTPUT);
+    pinMode(D13,OUTPUT);
+}
+
+void loop() {
+    // 只要呼叫此函數即可
+    int cm = sonar.ping_cm();
+    Serial.print("Ping: ");
+    Serial.print(cm);
+    Serial.println("cm");   
+    digitalWrite(D4,(cm/int(pow(2,0)))%2);//1
+    digitalWrite(D0,(cm/int(pow(2,1)))%2);//2
+    digitalWrite(D2,(cm/int(pow(2,2)))%2);//3
+    digitalWrite(D16,(cm/int(pow(2,3)))%2);//4
+    digitalWrite(D14,(cm/int(pow(2,4)))%2);//5
+    digitalWrite(D12,(cm/int(pow(2,5)))%2);//6
+    digitalWrite(D13,(cm/int(pow(2,6)))%2);//7
+    delay(1000);
+}
