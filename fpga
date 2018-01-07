@@ -1,15 +1,16 @@
-
 module top(
 	//Clock Input:48M
 	CLK,
 	DS_EN4,DS_EN3,DS_EN2,DS_EN1,
 	DS_A,DS_B,DS_C,DS_D,DS_E,DS_F,DS_G,DS_DP,
-	PS2_DAT,V_SYNC,VB2,VB1,VG0,VG4,VG2
+	PS2_DAT,V_SYNC,VB2,VB1,VG0,VG4,VG2,
+	BP1
 );
 	input CLK;
 	input PS2_DAT,V_SYNC,VB2,VB1,VG0,VG4,VG2;
 	output DS_EN4,DS_EN3,DS_EN2,DS_EN1;
 	output DS_A,DS_B,DS_C,DS_D,DS_E,DS_F,DS_G,DS_DP;
+	output BP1;
 	
 	reg [24:0]divCLK;
 	wire [3:0]A,B,C,D;
@@ -17,7 +18,8 @@ module top(
 	reg [1:0]sync_counter;
 	reg [3:0]sync;
 	wire [6:0]datain;
-	//assign datain={PS2_DAT,V_SYNC,VB2,VB1,VG0,VG4,VG2};
+
+
 	assign datain={VG2,VG4,VG0,VB1,VB2,V_SYNC,PS2_DAT};
 	assign {DS_A,DS_B,DS_C,DS_D,DS_E,DS_F,DS_G,DS_DP}=seg;
 	assign {DS_EN4,DS_EN3,DS_EN2,DS_EN1}=sync;
@@ -25,12 +27,23 @@ module top(
 	assign C=(datain/10)%10;
 	assign B=(datain/100)%10;
 
+	assign BP1=(datain<6'd10)?clk_1k:1;
 	
+	parameter DIV_KHZ = 32'd48_000;
+	reg[31:0]cnt_khz;
+	reg clk_1k;
+
+	always@(posedge CLK)
+		if(cnt_khz == DIV_KHZ/2)
+			begin 
+				cnt_khz <= 32'b0; 
+				clk_1k = !clk_1k;
+			end
+		else cnt_khz <= cnt_khz + 1'b1;	
 	
 	always@(posedge CLK)begin
 		divCLK=divCLK+25'b1;
 	end
-	
 	
 	always@(posedge divCLK[15])begin
 		sync_counter=sync_counter+1;
