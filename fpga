@@ -12,6 +12,7 @@ module top(
 	output DS_A,DS_B,DS_C,DS_D,DS_E,DS_F,DS_G,DS_DP;
 	output BP1;
 	
+	reg BP1;
 	reg [24:0]divCLK;
 	wire [3:0]A,B,C,D;
 	reg [7:0]seg;
@@ -27,7 +28,21 @@ module top(
 	assign C=(datain/10)%10;
 	assign B=(datain/100)%10;
 
-	assign BP1=(datain<6'd10)?clk_1k:1;
+//	assign BP1=(datain<6'd10)?clk_1k:1;
+	
+	always@(*)begin
+		if(datain<6'd5)
+			BP1=clk_1k;
+		else if(datain<6'd10)begin
+			if(divCLK[22])
+				BP1=clk_1k;
+		end
+		else if(datain<6'd20)begin 
+			if(divCLK[23])
+				BP1=clk_1k;
+		end
+		else BP1=0;
+	end
 	
 	parameter DIV_KHZ = 32'd48_000;
 	reg[31:0]cnt_khz;
